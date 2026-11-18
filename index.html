@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Trade Ledger</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="page-header">
+    <div>
+      <h1>⚖ Trade Ledger</h1>
+    </div>
+    <button id="dm-button">DM setup</button>
+  </header>
+  <div class="container">
+    <div class="left">
+      <!-- app.js fills this with one card per town -->
+      <div class="layout" id="towns"></div>
+      <button id="add-town" class="add-town" hidden>+ Add town</button>
+    </div>
+    <div class="right">
+      <div class="box">
+        <h3>Treasurey</h3>
+        <p>stuff n' loot</p>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

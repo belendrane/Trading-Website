@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caravan Ledger: Town Trading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#efe4cc; --paper:#f8f1e1; --paper2:#f3e9d3; --ink:#2b2118; --muted:#6e5d49;
+    --line:#d6c4a0; --accent:#8b2e1f; --accent2:#a8432f; --gold:#a6781f; --good:#3d6b35; --bad:#a3271b;
+    --shadow:0 1px 0 rgba(255,255,255,.6) inset, 0 2px 6px rgba(60,40,10,.12);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 Alegreya, Georgia, serif;
+    background-image:radial-gradient(ellipse at top, #f6ecd6 0%, var(--bg) 60%);min-height:100vh}
+  h1,h2,h3{font-family:Cinzel, Georgia, serif;letter-spacing:.02em;margin:0}
+  h1{font-size:26px} h2{font-size:18px} h3{font-size:16px}
+  button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:5px 11px}
+  button:hover:not(:disabled){border-color:var(--accent2)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.primary{background:var(--accent);color:#fff8ec;border-color:var(--accent)}
+  button.primary:hover:not(:disabled){background:var(--accent2)}
+  button.good{background:var(--good);border-color:var(--good);color:#f4fbef}
+  button.small{padding:2px 8px;font-size:14px}
+  button.link{border:none;background:none;color:var(--accent);padding:0 4px;text-decoration:underline}
+  input,select{font:inherit;color:var(--ink);background:#fffaf0;border:1px solid var(--line);border-radius:5px;padding:3px 6px}
+  input[type=number]{width:74px}
+  .wrap{max-width:1280px;margin:0 auto;padding:18px 18px 60px}
+  header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  header .sub{color:var(--muted);font-style:italic}
+  header .spacer{flex:1}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:14px 16px}
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+  @media (max-width:960px){.grid{grid-template-columns:1fr}}
+  .stack{display:flex;flex-direction:column;gap:16px}
+  .players{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:var(--paper2);border:1px solid var(--line);font-size:15px}
+  .chip.ok{background:#e3eedb;border-color:#a9c49c}
+  .chip .x{border:none;background:none;padding:0 2px;color:var(--muted)}
+  .stat{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
+  .stat div{min-width:80px}
+  .stat b{display:block;font-size:20px}
+  .stat span{color:var(--muted);font-size:14px}
+  .gp{color:var(--gold);font-weight:700}
+  table{border-collapse:collapse;width:100%;font-size:15.5px}
+  th{font-weight:500;color:var(--muted);text-align:right;padding:4px 6px;border-bottom:1px solid var(--line);font-size:14px}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:5px 6px;border-bottom:1px dashed #e4d6b8;text-align:right;white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  .towns{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:16px}
+  @media (max-width:520px){.towns{grid-template-columns:1fr} .card{overflow-x:auto}}
+  .town-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .muted{color:var(--muted)} .bad{color:var(--bad)} .good-t{color:var(--good)}
+  .note{font-size:14px;color:var(--muted);font-style:italic}
+  .deal-line{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed #e4d6b8}
+  .deal-line:last-child{border-bottom:none}
+  .deal-line .who{font-size:13px;color:var(--muted)}
+  .tag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:1px 6px;border-radius:4px;margin-right:6px}
+  .tag.buy{background:#e6dcf0;color:#4b2f6b} .tag.sell{background:#dcebe4;color:#24553f}
+  .problems{background:#f8e0da;border:1px solid #e3b2a7;border-radius:8px;padding:8px 12px;margin:10px 0;font-size:15px}
+  .problems li{margin:2px 0}
+  .agree-box{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .banner{padding:10px 14px;border-radius:8px;background:#fbf0d4;border:1px solid #e3cf98;margin-bottom:14px}
+  .log-item{padding:8px 0;border-bottom:1px dashed #e4d6b8;font-size:15px}
+  .log-item:last-child{border-bottom:none}
+  .overlay{position:fixed;inset:0;background:rgba(40,28,12,.45);display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:30px 12px;z-index:10}
+  .modal{background:var(--paper);border-radius:12px;max-width:980px;width:100%;padding:20px 22px;border:1px solid var(--line)}
+  .modal h2{margin-bottom:8px}
+  .dm-town{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:12px 0;background:var(--paper2)}
+  .dm-town table input[type=number]{width:70px}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fbf3e2;padding:9px 16px;border-radius:8px;z-index:20;font-size:15px}
+  .empty{text-align:center;padding:40px 20px}
+  .delta-pos{color:var(--good)} .delta-neg{color:var(--bad)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>⚖ Caravan Ledger</h1>
+      <div class="sub" id="subtitle">Trade between the towns of the realm</div>
+    </div>
+    <div class="spacer"></div>
+    <div id="hdr-actions" class="row"></div>
+  </header>
+  <div id="banner"></div>
+  <div id="main"><div class="card empty muted">Unrolling the ledger…</div></div>
+</div>
+<div id="overlay-root"></div>
+<div id="toast-root"></div>
+
+<script>
+(() => {
+  const $ = (s, r=document) => r.querySelector(s);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const num = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+  const lim = v => (v === null || v === undefined || v === "") ? null : num(v); // null = no limit
+  const seg = id => String(id).replace(/[^A-Za-z0-9_\-.~:@+]/g, "_");
+  const fmt = n => (Math.round(n*100)/100).toLocaleString();
+
+  const S = {
+    db:null, user:null, me:null, meSeg:null, owner:false, canWrite:true,
+    cfg:null, cfgLoaded:false, lines:[], approvals:{}, players:[], log:[],
+    names:{}, qty:{}, busy:false, loadErr:null, slow:false, draft:null
+  };
+
+  function toast(msg){
+    const el = document.createElement("div"); el.className = "toast"; el.textContent = msg;
+    $("#toast-root").appendChild(el); setTimeout(() => el.remove(), 3200);
+  }
+  function errMsg(e){
+    if (e && e.code === "quota_exceeded") return "The ledger is full. Ask the DM to clear old history.";
+    if (e && e.code === "invalid_argument") return "That change wasn't allowed. You may only have view access.";
+    return "Couldn't save that, please try again.";
+  }
+
+  // ---------- names ----------
+  async function resolveNames(ids){
+    if (!S.user || !S.user.profiles) return;
+    const need = [...new Set(ids.filter(id => id && !(id in S.names)))];
+    if (!need.length) return;
+    need.forEach(id => S.names[id] = "");
+    try {
+      const ps = await S.user.profiles(need);
+      need.forEach(id => S.names[id] = (ps && ps[id] && ps[id].name) || "");
+      render();
+    } catch(e){}
+  }
+  const nameOf = id => id === S.me ? "You" : (S.names[id] || "A player");
+
+  // ---------- deal maths ----------
+  function townMap(){ return Object.fromEntries((S.cfg?.towns||[]).map(t => [t.id, t])); }
+  function sigOf(cfg, lines){
+    return JSON.stringify([cfg?.rev||0, [...lines].sort((a,b)=>a.id<b.id?-1:1).map(l=>[l.id,l.town,l.res,l.dir,l.qty])]);
+  }
+  function analyze(cfg, lines){
+    const towns = Object.fromEntries((cfg.towns||[]).map(t => [t.id, t]));
+    const problems = [];
+    const home = cfg.home || {gold:0, stock:{}};
+    let homeGold = num(home.gold);
+    const homeStock = {}; (cfg.resources||[]).forEach(r => homeStock[r] = num(home.stock?.[r]));
+    const tsum = {};
+    const priced = [];
+    for (const l of lines){
+      const t = towns[l.town];
+      if (!t){ problems.push("A trade refers to a town that no longer exists. Remove it."); priced.push({...l, total:0, price:0}); continue; }
+      if (!(cfg.resources||[]).includes(l.res)){ problems.push(`${l.res} is no longer a tradeable resource.`); priced.push({...l,total:0,price:0}); continue; }
+      const r = t.res?.[l.res] || {};
+      const s = tsum[t.id] ??= {goldOut:0, goldIn:0, out:{}, in:{}};
+      const qty = Math.max(0, Math.floor(num(l.qty)));
+      if (l.dir === "buy"){
+        const price = num(r.ask);
+        if (!price) problems.push(`${t.name} isn't selling ${l.res}.`);
+        const total = qty*price;
+        s.goldIn += total; s.out[l.res] = (s.out[l.res]||0) + qty;
+        homeGold -= total; homeStock[l.res] = (homeStock[l.res]||0) + qty;
+        priced.push({...l, qty, price, total});
+      } else {
+        const price = num(r.bid);
+        if (!price) problems.push(`${t.name} isn't buying ${l.res}.`);
+        const total = qty*price;
+        s.goldOut += total; s.in[l.res] = (s.in[l.res]||0) + qty;
+        homeGold += total; homeStock[l.res] = (homeStock[l.res]||0) - qty;
+        priced.push({...l, qty, price, total});
+      }
+    }
+    for (const [tid, s] of Object.entries(tsum)){
+      const t = towns[tid];
+      const gl = lim(t.goldLimit);
+      if (gl !== null && s.goldOut > gl - num(t.goldGiven))
+        problems.push(`${t.name} will only pay out ${fmt(Math.max(0, gl - num(t.goldGiven)))} gp more this round (deal asks ${fmt(s.goldOut)} gp).`);
+      if (num(t.gold) + s.goldIn - s.goldOut < 0)
+        problems.push(`${t.name} doesn't have enough gold (has ${fmt(num(t.gold))} gp, would need ${fmt(s.goldOut - s.goldIn)} gp).`);
+      for (const [res, q] of Object.entries(s.out)){
+        const r = t.res?.[res] || {};
+        const rl = lim(r.limit);
+        if (rl !== null && q > rl - num(r.given))
+          problems.push(`${t.name} will only part with ${Math.max(0, rl - num(r.given))} more ${res} this round (deal asks ${q}).`);
+        if (num(r.stock) + (s.in[res]||0) - q < 0)
+          problems.push(`${t.name} only has ${num(r.stock)} ${res} (deal asks ${q}).`);
+      }
+    }
+    if (homeGold < 0) problems.push(`${home.name || "Your town"} can't afford this. It's short ${fmt(-homeGold)} gp.`);
+    for (const [res, q] of Object.entries(homeStock))
+      if (q < 0) problems.push(`${home.name || "Your town"} would need ${-q} more ${res} than it has.`);
+    return {problems:[...new Set(problems)], homeGold, homeStock, tsum, priced};
+  }
+  function applyDeal(cfg, lines){
+    const c = JSON.parse(JSON.stringify(cfg));
+    const towns = Object.fromEntries(c.towns.map(t => [t.id, t]));
+    c.home.stock ||= {};
+    for (const l of lines){
+      const t = towns[l.town]; const r = t.res[l.res]; const qty = Math.floor(num(l.qty));
+      if (l.dir === "buy"){
+        const total = qty*num(r.ask);
+        c.home.gold = num(c.home.gold) - total; c.home.stock[l.res] = num(c.home.stock[l.res]) + qty;
+        t.gold = num(t.gold) + total; r.stock = num(r.stock) - qty; r.given = num(r.given) + qty;
+      } else {
+        const total = qty*num(r.bid);
+        c.home.gold = num(c.home.gold) + total; c.home.stock[l.res] = num(c.home.stock[l.res]) - qty;
+        t.gold = num(t.gold) - total; t.goldGiven = num(t.goldGiven) + total; r.stock = num(r.stock) + qty;
+      }
+    }
+    c.rev = num(c.rev) + 1;
+    return c;
+  }
+
+  // ---------- render ----------
+  function render(){
+    const active = document.activeElement;
+    const focusId = active && active.id;
+    const selStart = active && active.selectionStart;
+    renderHeader(); renderBanner(); renderMain();
+    if (focusId){ const el = document.getElementById(focusId); if (el){ el.focus(); try{ if (selStart!=null) el.setSelectionRange(selStart, selStart);}catch(e){} } }
+  }
+  function renderHeader(){
+    const h = $("#hdr-actions"); let html = "";
+    if (S.owner && S.cfgLoaded) html += `<button data-act="dm-open">🛠 DM setup</button>`;
+    h.innerHTML = html;
+    if (S.cfg) $("#subtitle").textContent = `Trading round ${num(S.cfg.round)||1} · Home: ${S.cfg.home?.name || "Your town"}`;
+  }
+  function renderBanner(){
+    let b = "";
+    if (!S.db && S.cfgLoaded) b = `<div class="banner">This page needs you to be signed in to claude.ai to see the shared ledger.</div>`;
+    else if (S.loadErr) b = `<div class="banner">${esc(S.loadErr)}</div>`;
+    else if (S.slow && !S.cfgLoaded) b = `<div class="banner">Still reaching the ledger… the data can't be reached yet.</div>`;
+    else if (!S.canWrite) b = `<div class="banner">You can view the ledger but not change it. Ask the DM to share this page with you as an <b>Editor</b>.</div>`;
+    $("#banner").innerHTML = b;
+  }
+  function renderMain(){
+    const m = $("#main");
+    if (!S.cfgLoaded){ return; }
+    if (!S.cfg){
+      m.innerHTML = S.owner
+        ? `<div class="card empty"><h2>No trade world yet</h2><p class="muted">Set up your party's home town and the towns you can trade with.</p><button class="primary" data-act="dm-new">Start setting up</button></div>`
+        : `<div class="card empty"><h2>The DM hasn't set up the towns yet</h2><p class="muted">Check back once your DM has opened the ledger.</p></div>`;
+      return;
+    }
+    const cfg = S.cfg;
+    const A = analyze(cfg, S.lines);
+    m.innerHTML = `<div class="grid">
+      <div class="stack">${playersCard()}${homeCard(A)}<div class="towns">${(cfg.towns||[]).map(townCard).join("") || `<div class="card muted">No other towns yet.</div>`}</div></div>
+      <div class="stack">${dealCard(A)}${logCard()}</div>
+    </div>`;
+  }
+  function playersCard(){
+    const sig = sigOf(S.cfg, S.lines);
+    const iAmPlayer = S.players.some(p => p.uid === S.me);
+    const chips = S.players.map(p => {
+      const ok = S.approvals[p.uid] === sig && S.lines.length;
+      const rm = (S.owner && p.uid !== S.me) ? `<button class="x" title="Remove from session" data-act="kick" data-id="${esc(p.id)}">×</button>` : "";
+      return `<span class="chip ${ok?'ok':''}">${ok?'✓':'•'} ${esc(nameOf(p.uid))}${rm}</span>`;
+    }).join("");
+    return `<div class="card"><div class="row" style="justify-content:space-between">
+      <div class="players"><b style="font-family:Cinzel">Party</b> ${chips || `<span class="muted">No one has joined yet</span>`}</div>
+      ${S.canWrite && S.me ? (iAmPlayer ? `<button class="small" data-act="leave">Leave the table</button>` : `<button class="primary small" data-act="join">Join as a player</button>`) : ""}
+    </div><div class="note" style="margin-top:6px">Everyone at the table has to agree before a deal can be finalized.</div></div>`;
+  }
+  function homeCard(A){
+    const h = S.cfg.home || {}; const res = S.cfg.resources || [];
+    const hasDeal = S.lines.length > 0;
+    const delta = (a,b) => { const d = b-a; if (!hasDeal || !d) return ""; return ` <span class="${d>0?'delta-pos':'delta-neg'}">→ ${fmt(b)}</span>`; };
+    return `<div class="card"><h2>🏰 ${esc(h.name || "Your town")}</h2>
+      <div class="stat">
+        <div><b class="gp">${fmt(num(h.gold))} gp${delta(num(h.gold), A.homeGold)}</b><span>Treasury</span></div>
+        ${res.map(r => `<div><b>${fmt(num(h.stock?.[r]))}${delta(num(h.stock?.[r]), A.homeStock[r]||0)}</b><span>${esc(r)}</span></div>`).join("")}
+      </div>${hasDeal ? `<div class="note" style="margin-top:6px">Arrows show what you'd have if the current deal goes through.</div>` : ""}</div>`;
+  }
+  function townCard(t){
+    const res = S.cfg.resources || [];
+    const gl = lim(t.goldLimit);
+    const payLeft = gl === null ? null : Math.max(0, gl - num(t.goldGiven));
+    const canAdd = S.canWrite && S.me;
+    const rows = res.map(r => {
+      const x = t.res?.[r] || {};
+      const rl = lim(x.limit);
+      const left = rl === null ? num(x.stock) : Math.max(0, Math.min(num(x.stock), rl - num(x.given)));
+      const key = `${t.id}|${r}`;
+      const id = "q_" + seg(key).replace(/[^A-Za-z0-9_-]/g, "_");
+      return `<tr>
+        <td><b>${esc(r)}</b></td>
+        <td>${fmt(num(x.stock))}</td>
+        <td>${fmt(left)}</td>
+        <td>${x.ask ? `<span class="gp">${fmt(num(x.ask))}</span>` : `<span class="muted">-</span>`}</td>
+        <td>${x.bid ? `<span class="gp">${fmt(num(x.bid))}</span>` : `<span class="muted">-</span>`}</td>
+        <td>${canAdd ? `<input type="number" min="1" step="1" id="${id}" data-qty="${esc(key)}" value="${esc(S.qty[key] ?? "")}" placeholder="qty">
+          <button class="small" data-act="add" data-dir="buy" data-town="${esc(t.id)}" data-res="${esc(r)}" ${x.ask && left>0 ? "" : "disabled"}>Buy</button>
+          <button class="small" data-act="add" data-dir="sell" data-town="${esc(t.id)}" data-res="${esc(r)}" ${x.bid ? "" : "disabled"}>Sell</button>` : ""}</td>
+      </tr>`;
+    }).join("");
+    return `<div class="card">
+      <div class="town-head"><h2>${esc(t.name)}</h2>
+        <div><span class="gp">${fmt(num(t.gold))} gp</span> <span class="muted" style="font-size:14px">${payLeft===null ? "" : `· will pay out ${fmt(Math.min(payLeft, num(t.gold)))} gp more this round`}</span></div></div>
+      ${t.notes ? `<div class="note" style="margin-bottom:6px">${esc(t.notes)}</div>` : ""}
+      <table><thead><tr><th>Resource</th><th>Stock</th><th title="How much they'll part with this round">Will sell</th><th title="Price per unit you pay them">Sells at</th><th title="Price per unit they pay you">Buys at</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+  }
+  function dealCard(A){
+    const sig = sigOf(S.cfg, S.lines);
+    const towns = townMap();
+    const iAmPlayer = S.players.some(p => p.uid === S.me);
+    const iAgree = S.approvals[S.me] === sig;
+    const agreed = S.players.filter(p => S.approvals[p.uid] === sig).length;
+    const ready = S.lines.length && !A.problems.length && S.players.length && agreed === S.players.length;
+    const lines = A.priced.slice().sort((a,b)=>num(a.at)-num(b.at)).map(l => {
+      const t = towns[l.town];
+      return `<div class="deal-line"><div>
+        <span class="tag ${l.dir}">${l.dir}</span>${fmt(l.qty)} ${esc(l.res)} ${l.dir==="buy"?"from":"to"} <b>${esc(t?.name || "?")}</b>
+        <div class="who">${fmt(l.price)} gp each · <span class="gp">${l.dir==="buy"?"−":"+"}${fmt(l.total)} gp</span> · added by ${esc(nameOf(l.by))}</div></div>
+        ${S.canWrite ? `<button class="small" title="Remove" data-act="rm" data-id="${esc(l.id)}">✕</button>` : ""}</div>`;
+    }).join("");
+    const net = A.homeGold - num(S.cfg.home?.gold);
+    return `<div class="card"><div class="row" style="justify-content:space-between"><h2>📜 Proposed deal</h2>
+      ${S.lines.length && S.canWrite ? `<button class="link" data-act="clear">clear all</button>` : ""}</div>
+      ${S.lines.length ? `<div style="margin-top:6px">${lines}</div>
+        <div class="row" style="justify-content:space-between;margin-top:8px"><span>Net for the treasury</span><b class="${net>=0?'delta-pos':'delta-neg'}">${net>=0?"+":"−"}${fmt(Math.abs(net))} gp</b></div>`
+        : `<p class="muted">No trades proposed yet. Pick a quantity next to any resource and press <b>Buy</b> or <b>Sell</b>. Everyone sees the deal update live.</p>`}
+      ${A.problems.length ? `<ul class="problems">${A.problems.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>` : ""}
+      ${S.lines.length ? `<div class="agree-box">
+        <div class="row"><b>${agreed} of ${S.players.length}</b>&nbsp;<span class="muted">players agree</span></div>
+        <div class="row">
+          ${iAmPlayer && S.canWrite ? (iAgree ? `<button data-act="unagree">Withdraw my agreement</button>` : `<button class="primary" data-act="agree" ${A.problems.length?"disabled":""}>I agree to this deal</button>`) : ""}
+          ${S.canWrite ? `<button class="good" data-act="finalize" ${ready && !S.busy ? "" : "disabled"}>Finalize trades</button>` : ""}
+        </div>
+        <div class="note">${!S.players.length ? "Nobody has joined the table yet. Players press “Join as a player” above." : "Any change to the deal resets everyone's agreement."}</div>
+      </div>` : ""}
+    </div>`;
+  }
+  function logCard(){
+    if (!S.log.length) return `<div class="card"><h2>📚 Trade history</h2><p class="muted">No deals finalized yet.</p></div>`;
+    return `<div class="card"><h2>📚 Trade history</h2>${S.log.map(e => `<div class="log-item">
+      <div class="muted" style="font-size:13px">Round ${esc(e.round)} · ${new Date(num(e.at)).toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</div>
+      ${(e.lines||[]).map(l => `<div><span class="tag ${l.dir==='buy'?'buy':'sell'}">${esc(l.dir)}</span>${fmt(l.qty)} ${esc(l.res)} ${l.dir==="buy"?"from":"to"} ${esc(l.town)} · ${fmt(l.total)} gp</div>`).join("")}
+    </div>`).join("")}</div>`;
+  }
+
+  // ---------- DM setup ----------
+  function blankCfg(){
+    return {resources:["Lumber","Stone","Food"], round:1, rev:1,
+      home:{name:"Our Town", gold:100, stock:{Lumber:0,Stone:0,Food:0}}, towns:[]};
+  }
+  function newTown(resources){
+    const res = {}; resources.forEach(r => res[r] = {stock:0, limit:"", ask:"", bid:"", given:0});
+    return {id:"t"+Math.random().toString(36).slice(2,9), name:"New Town", gold:100, goldLimit:"", goldGiven:0, notes:"", res};
+  }
+  function openDM(fresh){
+    S.draft = JSON.parse(JSON.stringify(fresh || S.cfg || blankCfg()));
+    renderDM();
+  }
+  function renderDM(){
+    const d = S.draft; const root = $("#overlay-root");
+    if (!d){ root.innerHTML = ""; return; }
+    const R = d.resources;
+    root.innerHTML = `<div class="overlay"><div class="modal">
+      <div class="row" style="justify-content:space-between"><h2>🛠 DM setup</h2><button data-act="dm-close">Close</button></div>
+      <p class="note">Only you (the page owner) see this. Saving resets any agreements on the current deal.</p>
+
+      <h3 style="margin-top:14px">Resources</h3>
+      <div class="row" style="margin-top:6px">${R.map((r,i)=>`<span class="chip">${esc(r)} <button class="x" data-act="dm-rmres" data-i="${i}" title="Remove">×</button></span>`).join("")}
+        <input id="dm-newres" placeholder="e.g. Iron" style="width:120px"><button class="small" data-act="dm-addres">Add resource</button></div>
+
+      <h3 style="margin-top:16px">Party's home town</h3>
+      <div class="dm-town"><div class="row">
+        <label>Name <input data-f="home.name" value="${esc(d.home.name)}"></label>
+        <label>Gold <input type="number" data-f="home.gold" data-n="1" value="${esc(d.home.gold)}"></label>
+        ${R.map(r=>`<label>${esc(r)} <input type="number" data-f="home.stock.${esc(r)}" data-n="1" value="${esc(d.home.stock?.[r] ?? 0)}"></label>`).join("")}
+      </div></div>
+
+      <div class="row" style="justify-content:space-between;margin-top:16px"><h3>Trading partners</h3><button class="small" data-act="dm-addtown">+ Add town</button></div>
+      ${d.towns.map((t,ti)=>`<div class="dm-town">
+        <div class="row" style="justify-content:space-between">
+          <div class="row">
+            <label>Name <input data-f="towns.${ti}.name" value="${esc(t.name)}"></label>
+            <label>Gold <input type="number" data-f="towns.${ti}.gold" data-n="1" value="${esc(t.gold)}"></label>
+            <label title="Max gold this town will pay out per round. Blank = no limit">Max gold out / round <input type="number" data-f="towns.${ti}.goldLimit" data-o="1" value="${esc(t.goldLimit)}" placeholder="∞"></label>
+            <span class="muted" style="font-size:14px">paid this round: ${fmt(num(t.goldGiven))}</span>
+          </div>
+          <button class="small" data-act="dm-rmtown" data-i="${ti}">Remove town</button>
+        </div>
+        <label style="display:block;margin-top:6px">Notes <input data-f="towns.${ti}.notes" value="${esc(t.notes||"")}" style="width:70%" placeholder="Visible to players, e.g. 'Short on food after the blight'"></label>
+        <table style="margin-top:8px"><thead><tr><th>Resource</th><th>Stock</th><th title="Max units it gives away per round. Blank = no limit">Max sold / round</th><th>Sold this round</th><th title="Price per unit the party pays. Blank = won't sell">Sells at (gp)</th><th title="Price per unit it pays the party. Blank = won't buy">Buys at (gp)</th></tr></thead><tbody>
+        ${R.map(r=>{ const x = t.res?.[r] || {}; return `<tr><td>${esc(r)}</td>
+          <td><input type="number" data-f="towns.${ti}.res.${esc(r)}.stock" data-n="1" value="${esc(x.stock ?? 0)}"></td>
+          <td><input type="number" data-f="towns.${ti}.res.${esc(r)}.limit" data-o="1" value="${esc(x.limit ?? "")}" placeholder="∞"></td>
+          <td>${fmt(num(x.given))}</td>
+          <td><input type="number" step="any" data-f="towns.${ti}.res.${esc(r)}.ask" data-o="1" value="${esc(x.ask ?? "")}" placeholder="-"></td>
+          <td><input type="number" step="any" data-f="towns.${ti}.res.${esc(r)}.bid" data-o="1" value="${esc(x.bid ?? "")}" placeholder="-"></td></tr>`; }).join("")}
+        </tbody></table></div>`).join("") || `<p class="muted">No towns yet. Add one.</p>`}
+
+      <div class="row" style="justify-content:space-between;margin-top:18px;padding-top:12px;border-top:1px solid var(--line)">
+        <div class="row">
+          <button data-act="dm-round" title="Resets every town's 'this round' counters">Start new trading round (now round ${num(d.round)||1})</button>
+          <button data-act="dm-clearlog">Clear trade history</button>
+        </div>
+        <div class="row"><button data-act="dm-close">Cancel</button><button class="primary" data-act="dm-save">Save setup</button></div>
+      </div>
+    </div></div>`;
+  }
+  function setPath(obj, path, val){
+    const ks = path.split("."); let o = obj;
+    for (let i=0;i<ks.length-1;i++){ o[ks[i]] ??= {}; o = o[ks[i]]; }
+    o[ks[ks.length-1]] = val;
+  }
+
+  // ---------- actions ----------
+  async function act(a, el){
+    const db = S.db;
+    try {
+      switch(a){
+        case "join": await db.doc("players/"+S.meSeg).set({uid:S.me, at:Date.now()}); break;
+        case "leave": await db.doc("players/"+S.meSeg).delete(); await db.doc("approvals/"+S.meSeg).delete(); break;
+        case "kick": await db.doc("players/"+el.dataset.id).delete(); await db.doc("approvals/"+el.dataset.id).delete(); break;
+        case "add": {
+          const key = `${el.dataset.town}|${el.dataset.res}`;
+          const q = Math.floor(num(S.qty[key]));
+          if (q < 1){ toast("Enter a quantity first."); return; }
+          await db.collection("lines").add({town:el.dataset.town, res:el.dataset.res, dir:el.dataset.dir, qty:q, by:S.me, at:Date.now()});
+          S.qty[key] = ""; render(); break;
+        }
+        case "rm": await db.doc("lines/"+el.dataset.id).delete(); break;
+        case "clear": for (const l of S.lines) await db.doc("lines/"+l.id).delete(); break;
+        case "agree": await db.doc("approvals/"+S.meSeg).set({uid:S.me, sig:sigOf(S.cfg, S.lines), at:Date.now()}); break;
+        case "unagree": await db.doc("approvals/"+S.meSeg).delete(); break;
+        case "finalize": await finalize(); break;
+        case "dm-open": openDM(); break;
+        case "dm-new": openDM(blankCfg()); break;
+        case "dm-close": S.draft = null; renderDM(); break;
+        case "dm-addres": {
+          const v = ($("#dm-newres").value||"").trim();
+          if (!v || S.draft.resources.includes(v) || /[.]/.test(v)){ toast(v.includes(".") ? "Resource names can't contain a period." : "Enter a new resource name."); return; }
+          S.draft.resources.push(v); S.draft.home.stock[v] = 0;
+          S.draft.towns.forEach(t => { t.res ||= {}; t.res[v] = {stock:0, limit:"", ask:"", bid:"", given:0}; });
+          renderDM(); break;
+        }
+        case "dm-rmres": S.draft.resources.splice(+el.dataset.i, 1); renderDM(); break;
+        case "dm-addtown": S.draft.towns.push(newTown(S.draft.resources)); renderDM(); break;
+        case "dm-rmtown": S.draft.towns.splice(+el.dataset.i, 1); renderDM(); break;
+        case "dm-round":
+          S.draft.round = (num(S.draft.round)||1) + 1;
+          S.draft.towns.forEach(t => { t.goldGiven = 0; Object.values(t.res||{}).forEach(x => x.given = 0); });
+          renderDM(); toast("New round set. Press Save to apply."); break;
+        case "dm-clearlog":
+          for (const e of S.log) await db.doc("log/"+e.id).delete();
+          toast("History cleared."); break;
+        case "dm-save": {
+          const d = S.draft; d.rev = Math.max(num(d.rev), num(S.cfg?.rev)) + 1;
+          await db.doc("game/config").set(d);
+          S.draft = null; renderDM(); toast("Setup saved."); break;
+        }
+      }
+    } catch(e){ console.error(e); toast(errMsg(e)); }
+  }
+
+  async function finalize(){
+    if (S.busy) return;
+    S.busy = true; render();
+    const db = S.db; const ref = db.doc("game/config");
+    try {
+      const lease = await ref.acquire({holder:S.meSeg || "x", ttlMs:20000});
+      if (!lease.acquired){ toast("Someone else is finalizing right now."); return; }
+      const [cs, ls, as, ps] = await Promise.all([ref.get(), db.collection("lines").get(), db.collection("approvals").get(), db.collection("players").get()]);
+      const cfg = cs.data(); const lines = ls.docs.map(d => ({id:d.id, ...d.data()}));
+      const appr = Object.fromEntries(as.docs.map(d => [d.data().uid, d.data().sig]));
+      const players = ps.docs.map(d => d.data().uid);
+      const sig = sigOf(cfg, lines);
+      const A = analyze(cfg, lines);
+      if (!lines.length || A.problems.length || !players.length || players.some(p => appr[p] !== sig)){
+        toast("The deal changed. Everyone needs to agree again."); return;
+      }
+      const towns = Object.fromEntries(cfg.towns.map(t => [t.id, t.name]));
+      const next = applyDeal(cfg, lines);
+      await ref.set(next);
+      await db.collection("log").add({at:Date.now(), round:num(cfg.round)||1, by:S.me, agreedBy:players,
+        lines:A.priced.map(l => ({town:towns[l.town], res:l.res, dir:l.dir, qty:l.qty, price:l.price, total:l.total}))});
+      for (const l of lines) await db.doc("lines/"+l.id).delete();
+      for (const d of as.docs) await db.doc("approvals/"+d.id).delete();
+      toast("Deal sealed! The goods are on their way.");
+    } catch(e){ console.error(e); toast(errMsg(e)); }
+    finally { S.busy = false; render(); }
+  }
+
+  document.addEventListener("click", e => {
+    const el = e.target.closest("[data-act]"); if (!el || el.disabled) return;
+    act(el.dataset.act, el);
+  });
+  document.addEventListener("input", e => {
+    const el = e.target;
+    if (el.dataset.qty !== undefined){ S.qty[el.dataset.qty] = el.value; return; }
+    if (el.dataset.f && S.draft){
+      let v = el.value;
+      if (el.dataset.n) v = num(v);
+      else if (el.dataset.o) v = v === "" ? "" : num(v);
+      setPath(S.draft, el.dataset.f, v);
+    }
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && e.target.id === "dm-newres"){ e.preventDefault(); act("dm-addres", e.target); }
+  });
+
+  // ---------- boot ----------
+  async function boot(){
+    const timer = setTimeout(() => { S.slow = true; render(); }, 10000);
+    let db = null, user = null;
+    try { [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]); } catch(e){}
+    S.db = db; S.user = user;
+    if (user){
+      try { S.me = await user.id(); } catch(e){}
+      try { S.owner = !!(await user.isOwner()); } catch(e){}
+      try { const c = await user.can("data.write"); S.canWrite = c === null ? true : !!c; } catch(e){}
+    }
+    if (!S.me) S.canWrite = false;
+    S.meSeg = S.me ? seg(S.me) : null;
+    if (!db){ clearTimeout(timer); S.cfgLoaded = true; S.canWrite = false; render(); return; }
+    const onErr = e => { clearTimeout(timer); S.loadErr = e.code === "revoked" ? "Access to this ledger changed. Reload to continue." : "Lost the connection to the ledger. Reload the page."; S.cfgLoaded = true; render(); };
+
+    db.doc("game/config").onSnapshot(snap => {
+      if (!snap.metadata.fromCache){ clearTimeout(timer); S.slow = false; }
+      S.cfg = snap.exists ? snap.data() : null; S.cfgLoaded = true; render();
+    }, onErr);
+    db.collection("lines").onSnapshot(snap => {
+      S.lines = snap.docs.map(d => ({id:d.id, ...d.data()}));
+      resolveNames(S.lines.map(l => l.by)); render();
+    }, onErr);
+    db.collection("approvals").onSnapshot(snap => {
+      S.approvals = Object.fromEntries(snap.docs.map(d => [d.data().uid, d.data().sig])); render();
+    }, onErr);
+    db.collection("players").orderBy("at").onSnapshot(snap => {
+      S.players = snap.docs.map(d => ({id:d.id, ...d.data()}));
+      resolveNames(S.players.map(p => p.uid)); render();
+    }, onErr);
+    db.collection("log").orderBy("at","desc").limit(25).onSnapshot(snap => {
+      S.log = snap.docs.map(d => ({id:d.id, ...d.data()})); render();
+    }, onErr);
+  }
+  if (window.claude && window.claude.use) boot();
+  else { S.cfgLoaded = true; render(); }
+})();
+</script>
+</body>
+</html>
