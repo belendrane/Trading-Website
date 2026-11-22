@@ -10,79 +10,40 @@
     <div>
       <h1>⚖ Trade Ledger</h1>
     </div>
-    <button id="dm-button">DM setup</button>
+    <nav class="page-nav">
+      <a href="#prices">Prices Current</a>
+      <a href="#holdings">Holdings</a>
+      <a href="#report">Weekly Report</a>
+      <a href="#dm">DM Setup</a>
+    </nav>
   </header>
+
   <div class="page-wrapper">
     <em class="running-head">Ledger of Chambers</em>
-    <h1 class="fleuron">Prices Current</h2>
-    <table>
-    <thead>
-      <tr>
-        <th>Commodity</th>
-        <th>Going rate</th>
-        <th>Grovedwood</th>
-        <th>Bronzesire</th>
-        <th>Callyaus</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Lumber</td>
-        <td>2</td>
-        <td>2</td>
-        <td>2</td>
-        <td>2</td>
-      </tr>
-      <tr>
-        <td>Stone</td>
-        <td>4</td>
-        <td>4</td>
-        <td>4</td>
-        <td>4</td>
-      </tr>
-      <tr>
-        <td>Food</td>
-        <td>1</td>
-        <td>1</td>
-        <td>1</td>
-        <td>1</td>
-      </tr>
-      <tr>
-        <td>Iron</td>
-        <td>6</td>
-        <td>6</td>
-        <td>6</td>
-        <td>6</td>
-      </tr>
-      <tr>
-        <td>Leather</td>
-        <td>3</td>
-        <td>3</td>
-        <td>3</td>
-        <td>3</td>
-      </tr>
-      <tr>
-        <td>Fabric</td>
-        <td>3</td>
-        <td>3</td>
-        <td>3</td>
-        <td>3</td>
-      </tr>
-      <tr>
-        <td>Funds</td>
-        <td></td>
-        <td>400</td>
-        <td>400</td>
-        <td>400</td>
-      </tr>
-    </tbody>
-  </table>
 
-  <p class="footer">✦ ✦ ✦</p>
+    <!-- Prices Current Page -->
+    <div id="page-prices">
+      <h1 class="fleuron">Prices Current</h1>
+      <table class="prices" id="prices"></table>
+      <p class="key">Prices in <span class="selling">red</span> are goods the town is selling.</p>
+    </div>
 
-      
-    
+    <!-- Holdings Page -->
+    <div id="page-holdings" hidden>
+      <h1 class="fleuron">Holdings</h1>
+      <p>Coming soon.</p>
+    </div>
 
+    <!-- Report Page -->
+    <div id="page-report" hidden>
+      <h1 class="fleuron">Weekly Report</h1>
+      <p>Coming soon.</p>
+    </div>
+
+    <!-- Editing Page -->
+    <div id="page-dm" hidden></div>
+
+    <p class="footer">✦ ✦ ✦</p>
   </div>
   <script src="app.js"></script>
 </body>

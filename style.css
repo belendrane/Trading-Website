@@ -2,6 +2,11 @@
   box-sizing: border-box;
 }
 
+/* make the "hidden" attribute always win, even over rules like display: flex */
+[hidden] {
+  display: none !important;
+}
+
 p {
   Color: #806a57;
 }
@@ -14,8 +19,7 @@ body {
 }
 
 .page-wrapper {
-  width: 700px;
-  height: 800px;
+  width: 800px;
   padding: 25px;
   background-color: #fff4e0;
   border: 8px solid #56321e;   /* width, style, color */
@@ -118,27 +122,6 @@ tbody td:first-child {
 
 
 
-
-
-
-
-
-
-
-.box {
-  background-color: #f8f1e1;
-  border: 1px solid #bdb092;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset,
-            0 2px 6px rgba(60, 40, 10, 0.12);
-}
-
-.layout {
-  display: grid;
-  gap: 16px;
-}
-
 .page-header {
   display: flex;
   justify-content: space-between;  /* push the title left and the button right */
@@ -148,76 +131,112 @@ tbody td:first-child {
   box-shadow: 0 2px 6px rgba(60, 40, 10, 0.12);   /* soft shadow below the header */
 }
 
-.container {
-  padding: 0 32px;   /* keep the columns away from the page edges */
-  display: grid;
-  grid-template-columns: 3fr 2fr;   /* same 60/40 split, but leaves room for the gap */
-  gap: 16px;
+/* ===== Editing the prices table ===== */
+.cell-input {
+  width: 100%;            /* fill the cell, however wide the column ends up */
+  font: inherit;         /* use the table's font instead of the browser's */
+  color: inherit;
+  text-align: right;
+  background-color: #fffaf0;
+  border: 1px solid #d9c7a0;
+  border-radius: 3px;
+  padding: 2px 4px;
 }
-.right {
-  position: sticky;           /* stay in place while the page scrolls */
-  top: 16px;                  /* how far from the top of the window it sticks */
-  align-self: start;          /* only as tall as its content, not stretched to the row */
+.name-input {
+  width: calc(100%);   /* fill the cell, minus room for the ✕ button */
+  text-align: left;
 }
 
+/* ===== DM panel ===== */
+/* each section (Resources, and one per town) is a card with space between */
+.dm-section {
+  border: 1px solid #d9c7a0;
+  border-radius: 3px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
 
-.box h3 {
+.dm-section h2 {
+  font-family: "IM Fell English SC", serif;
+  color: #8b2e1f;
   margin-top: 0;
 }
 
-/* ===== Town cards ===== */
-.box h4 {
-  margin: 12px 0 4px;
-  font-size: 14px;
-  color: #2b2118;
-}
-
-.goods {
-  list-style: none;      /* no bullet points */
-  margin: 0;
-  padding: 0;
-}
-
-.goods li {
-  display: flex;
-  justify-content: space-between;   /* name on the left, price on the right */
-  padding: 2px 0;
-  border-bottom: 1px dotted #d9c7a0;
-}
-
-.empty {
-  font-style: italic;
-  font-size: 14px;
-}
-
-/* ===== DM editing ===== */
-.town-name {
-  width: 100%;
-  box-sizing: border-box;
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 12px;
-}
-
-.good-row {
+/* line every row's pieces up into columns */
+.resource-row,
+.funds-row,
+.town-price-row {
   display: grid;
-  grid-template-columns: auto 1fr 70px auto auto;   /* select, name, price, "gp", remove */
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
+  align-items: center;     /* centre everything vertically in its row */
+  gap: 8px;                /* space between columns */
+  margin-bottom: 6px;
+  font-family: "IM Fell English", serif;
 }
 
-.card-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 12px;
+/* name | rate | "gp" | ✕ */
+.resource-row {
+  grid-template-columns: 1fr 5em auto auto;
 }
 
-.danger {
+/* "Funds" | amount | "gp" */
+.funds-row {
+  grid-template-columns: 1fr 6em auto;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #d9c7a0;   /* separate funds from the price rows */
+}
+
+/* name | percent | "%" | Selling */
+.town-price-row {
+  grid-template-columns: 1fr 5em auto 6em;
+}
+
+.key {
+  font-family: "IM Fell English", serif;
+  font-style: italic;
+  font-size: 0.9em;
+  text-align: right;
+}
+
+.remove {
+  border: none;
+  background: none;
   color: #8b2e1f;
+  cursor: pointer;
+  padding: 0 4px;
 }
 
-.add-town {
+.table-actions {
+  display: flex;
+  gap: 8px;
   margin-top: 16px;
 }
 
+/* prices of goods the town is selling */
+.selling {
+  color: #8b2e1f;
+}
+
+/* ===== Navigation ===== */
+.page-nav {
+  display: flex;
+  gap: 4px;
+  padding-right: 16px;
+}
+
+.page-nav a {
+  font-family: "IM Fell English SC", serif;
+  color: #fff4e0;                /* parchment-coloured text on the brown header */
+  text-decoration: none;         /* no underline */
+  padding: 6px 12px;
+  border-radius: 3px;
+}
+
+.page-nav a:hover {
+  background-color: rgba(255, 244, 224, 0.15);   /* faint highlight on hover */
+}
+
+/* the page you're on */
+.page-nav a.current {
+  background-color: #fff4e0;
+  color: #56321e;
+}
